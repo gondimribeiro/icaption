@@ -46,7 +46,7 @@ x = Lambda(lambda x: x.swapaxes(-1, -2))(input_)
 x = Flatten()(x)
 x = RepeatVector(SENTENCE_LEN)(x)
 x = AttentionRNN(HIDDEN_SIZE, 512, consume_less='gpu', return_sequences=True)(x)
-x = TimeDistributed(Dense(VOCABULARY_SIZE+1))(x)
+x = TimeDistributed(Dense(VOCABULARY_SIZE+2))(x)
 output_ = TimeDistributed(Activation('softmax'))(x)
 model = Model(input=input_, output=output_)
 model.compile(loss='categorical_crossentropy',
@@ -64,9 +64,9 @@ def captions_from_fnames(files, it):
 
         caption_labels = np.array(img_captions[it])
         caption_labels[caption_labels >= VOCABULARY_SIZE] = VOCABULARY_SIZE
-        caption = np.zeros([SENTENCE_LEN, VOCABULARY_SIZE+1], dtype='float32')
+        caption = np.zeros([SENTENCE_LEN, VOCABULARY_SIZE+2], dtype='float32')
         caption[np.arange(len(caption_labels)), caption_labels] = 1.0
-        caption[len(caption_labels), VOCABULARY_SIZE] = 1.0
+        caption[len(caption_labels), VOCABULARY_SIZE+1] = 1.0
 
         weights = np.zeros(SENTENCE_LEN)
         weights[:len(caption_labels)+1] = 1.0
@@ -95,7 +95,6 @@ def data_generator(dataset):
         for i in range(0, n - n%BATCH_SIZE, BATCH_SIZE):
             X = images[idxs[i:i+BATCH_SIZE]]
             Y, sample_weights = captions_from_fnames(fnames[idxs[i:i+BATCH_SIZE]], it_caption)
-            print(X.shape, Y.shape, sample_weights.shape)
             yield (X, Y, sample_weights)
         it_caption = (it_caption + 1)%5
 
