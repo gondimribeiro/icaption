@@ -35,5 +35,10 @@ class AttentionRNN(LSTM):
         sums = K.sum(e, axis=-1, keepdims=True)
         alphas = e/sums
         z = K.sum(x*alphas, axis=1)
-        
+
         return super(AttentionRNN, self).step(z, states)
+
+    def get_config(self):
+        config = {'fv_dim': self.fv_dim}
+        base_config = super(AttentionRNN, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
