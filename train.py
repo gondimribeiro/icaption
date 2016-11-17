@@ -39,7 +39,7 @@ x = TimeDistributed(Dense(args.vocabulary_size+2))(x)
 output_ = TimeDistributed(Activation('softmax'))(x)
 model = Model(input=input_, output=output_)
 model.compile(loss='categorical_crossentropy',
-              optimizer='adam',
+              optimizer='rmsprop',
               sample_weight_mode='temporal',
               metrics=['accuracy'])
 
