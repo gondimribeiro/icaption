@@ -65,6 +65,7 @@ img_features = img_features.reshape([512, 196])
 
 y_pred = model.predict(np.array([img_features]))[0]
 idxs = y_pred.argmax(axis=-1)
+print(idxs)
 
 idx2word = pkl.load(open('data/idx2word.pkl', 'rb'))
 for idx in idxs:
@@ -75,4 +76,6 @@ for idx in idxs:
         break
     else:
         print(idx2word[idx], end=' ')
+
+print('')
 
