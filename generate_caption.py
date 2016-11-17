@@ -1,6 +1,35 @@
+import sys
+import argparse
+import numpy as np
+import pickle as pkl
 from vgg19 import VGG19
-from keras import backend as K
 from keras import preprocessing
+from keras import backend as K
+from keras.models import Model
+from keras.layers import Input, Lambda, RepeatVector, Flatten
+from keras.layers import Activation, Dense, TimeDistributed
+from keras.callbacks import ModelCheckpoint
+from layers import AttentionRNN
+
+
+def preprocess_input(x, dim_ordering='default'):
+    if dim_ordering == 'default':
+        dim_ordering = K.image_dim_ordering()
+    assert dim_ordering in {'tf', 'th'}
+
+    if dim_ordering == 'th':
+        x[:, 0, :, :] -= 103.939
+        x[:, 1, :, :] -= 116.779
+        x[:, 2, :, :] -= 123.68
+        # 'RGB'->'BGR'
+        x = x[:, ::-1, :, :]
+    else:
+        x[:, :, :, 0] -= 103.939
+        x[:, :, :, 1] -= 116.779
+        x[:, :, :, 2] -= 123.68
+        # 'RGB'->'BGR'
+        x = x[:, :, :, ::-1]
+    return x
 
 parser = argparse.ArgumentParser(description='Image captioning.')
 parser.add_argument('--image-file', dest='image_file', required=True)
