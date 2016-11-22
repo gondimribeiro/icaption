@@ -26,14 +26,14 @@ class AttentionRNN(LSTM):
         self.trainable_weights.extend([self.Wah, self.Waa, self.B])
 
     def step(self, x, states):
-        x = K.reshape(x, (-1, 196, 512))
+        # x = K.reshape(x, (-1, 196, 512))
         h = states[0]
 
         p1 = K.dot(h, self.Wah)
         p2 = K.dot(x, self.Waa)
         e = K.tanh(K.expand_dims(p1, dim=1) + p2) + self.B
         sums = K.sum(e, axis=-1, keepdims=True)
-        alphas = e/sums
+        alphas = K.exp(e)/K.exp(sums)
         z = K.sum(x*alphas, axis=1)
 
         return super(AttentionRNN, self).step(z, states)
