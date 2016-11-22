@@ -13,7 +13,7 @@ import utils
 parser = argparse.ArgumentParser(description='Image captioning model.')
 parser.add_argument('--sentence-size', dest='sentence_size', type=int, default=60)
 parser.add_argument('--vocabulary-size', dest='vocabulary_size', type=int, default=10000)
-parser.add_argument('--batch-size', dest='batch_size', type=int, default=10)
+parser.add_argument('--batch-size', dest='batch_size', type=int, default=64)
 parser.add_argument('--nb-epoch', dest='nb_epoch', type=int, default=100)
 args = parser.parse_args(sys.argv[1:])
 

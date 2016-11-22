@@ -32,8 +32,8 @@ class AttentionRNN(LSTM):
         p1 = K.dot(h, self.Wah)
         p2 = K.dot(x, self.Waa)
         e = K.tanh(K.expand_dims(p1, dim=1) + p2) + self.B
-        sums = K.sum(e, axis=-1, keepdims=True)
-        alphas = K.exp(e)/K.exp(sums)
+        sums = K.sum(K.exp(e), axis=-1, keepdims=True)
+        alphas = K.exp(e)/sums
         z = K.sum(x*alphas, axis=1)
 
         return super(AttentionRNN, self).step(z, states)
