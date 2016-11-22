@@ -26,7 +26,7 @@ class AttentionRNN(LSTM):
         self.trainable_weights.extend([self.Wah, self.Waa, self.B])
 
     def step(self, x, states):
-        # x = K.reshape(x, (-1, 196, 512))
+        x = K.reshape(x, (-1, 196, 512))
         h = states[0]
 
         p1 = K.dot(h, self.Wah)
