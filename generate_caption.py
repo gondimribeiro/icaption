@@ -50,10 +50,6 @@ x = AttentionRNN(512, fv_dim=512, consume_less='gpu', return_sequences=True)(x)
 x = TimeDistributed(Dense(args.vocabulary_size+2))(x)
 output_ = TimeDistributed(Activation('softmax'))(x)
 model = Model(input=input_, output=output_)
-# model.compile(loss='categorical_crossentropy',
-#               optimizer='rmsprop',
-#               sample_weight_mode='temporal',
-#               metrics=['accuracy'])
 model.load_weights(args.weights_file)
 
 img = preprocessing.image.load_img(args.image_file, target_size=(224, 224))
