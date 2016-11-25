@@ -7,8 +7,17 @@ from keras.models import Model
 from keras.layers import Input, Lambda, RepeatVector, Flatten
 from keras.layers import Activation, Dense, TimeDistributed
 from keras.callbacks import ModelCheckpoint
+from keras.optimizers import Adam
+from keras.objectives import categorical_crossentropy
 from layers import AttentionRNN
+from keras import regularizers
 import utils
+
+def custom_loss(lmbda, alphas):
+    def loss_regularized(y_true, y_pred):
+        return categorical_crossentropy(y_true, y_pred) + \
+        lmbda*K.sum(K.square(1 - K.sum(alphas, axis=-1)), axis=-1)
+    return loss_regularized
 
 parser = argparse.ArgumentParser(description='Image captioning model.')
 parser.add_argument('--sentence-size', dest='sentence_size', type=int, default=60)
@@ -16,7 +25,6 @@ parser.add_argument('--vocabulary-size', dest='vocabulary_size', type=int, defau
 parser.add_argument('--batch-size', dest='batch_size', type=int, default=64)
 parser.add_argument('--nb-epoch', dest='nb_epoch', type=int, default=100)
 args = parser.parse_args(sys.argv[1:])
-
 
 # Loading datasets
 fnames_train2014 = np.array(pkl.load(open('data/fnames_train2014.pkl', 'rb')))
@@ -34,15 +42,15 @@ input_ = Input(shape=(512, 196))
 x = Lambda(lambda x: x.swapaxes(-1, -2))(input_)
 x = Flatten()(x)
 x = RepeatVector(args.sentence_size)(x)
-x = AttentionRNN(512, fv_dim=512, consume_less='gpu', return_sequences=True)(x)
+x = AttentionRNN(512, fv_dim=512, consume_less='gpu', return_sequences=True, l2=1.)(x)
 x = TimeDistributed(Dense(args.vocabulary_size+2))(x)
 output_ = TimeDistributed(Activation('softmax'))(x)
-model = Model(input=input_, output=output_)
+model = Model(input=input_, output=[output_])
+optimizer = Adam(lr=0.0003, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
 model.compile(loss='categorical_crossentropy',
-              optimizer='rmsprop',
+              optimizer=optimizer,
               sample_weight_mode='temporal',
               metrics=['accuracy'])
-
 
 def captions_from_fnames(files, it):
     captions = []
@@ -87,7 +95,6 @@ def data_generator(dataset):
             Y, sample_weights = captions_from_fnames(fnames[idxs[i:i+args.batch_size]], it_caption)
             yield (X, Y, sample_weights)
         it_caption = (it_caption + 1)%5
-
 
 mc = ModelCheckpoint('weights/epoch_{epoch:02d}-loss_{val_loss:.2f}.hdf5',
                      save_best_only=True, save_weights_only=True)
